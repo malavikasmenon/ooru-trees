@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ooru Trees · Bengaluru</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f0ea;
+      color: #1e2a1e;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Header ──────────────────────────────────────────────── */
+    #header {
+      flex-shrink: 0;
+      height: 54px;
+      background: #1b4332;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      z-index: 900;
+    }
+
+    #header .logo { font-size: 22px; }
+
+    #header h1 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #d8f3dc;
+      letter-spacing: -0.3px;
+    }
+
+    #header .sub {
+      font-size: 12px;
+      color: #74c69d;
+      font-weight: 400;
+    }
+
+    #header .spacer { flex: 1; }
+
+    #header .badge {
+      font-size: 11.5px;
+      color: #74c69d;
+      background: rgba(255,255,255,.08);
+      border-radius: 20px;
+      padding: 3px 10px;
+      white-space: nowrap;
+    }
+
+    /* ─── Map wrapper ─────────────────────────────────────────── */
+    #map-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ─── Control panel (floats over map) ─────────────────────── */
+    #panel {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 800;
+      width: 300px;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.16), 0 1px 4px rgba(0,0,0,.08);
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100% - 24px);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-head span {
+      flex: 1;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #1b4332;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .btn-clear {
+      font-size: 11.5px;
+      color: #64748b;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 6px;
+      padding: 3px 9px;
+      cursor: pointer;
+    }
+    .btn-clear:hover { background: #e2e8f0; }
+
+    .search-wrap { padding: 8px 10px 5px; flex-shrink: 0; }
+
+    #search {
+      width: 100%;
+      padding: 7px 10px 7px 28px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 7px;
+      font-size: 13px;
+      outline: none;
+      background: #f8fafc url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 9px center;
+      color: #1e293b;
+    }
+    #search:focus { border-color: #2d6a4f; background-color: #fff; }
+    #search::placeholder { color: #94a3b8; }
+
+    /* ─── Species list ────────────────────────────────────────── */
+    #species-list {
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sp-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: background .1s;
+      user-select: none;
+    }
+    .sp-item:hover    { background: #f8fafc; }
+    .sp-item.selected { background: #f0fdf4; }
+
+    .swatch {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(0,0,0,.12);
+    }
+
+    .sp-name {
+      flex: 1;
+      font-size: 12px;
+      color: #374151;
+      font-style: italic;
+      line-height: 1.4;
+    }
+
+    .sp-count {
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .sp-check {
+      font-size: 11px;
+      color: #2d6a4f;
+      opacity: 0;
+      flex-shrink: 0;
+    }
+    .sp-item.selected .sp-check { opacity: 1; }
+
+    /* ─── Panel footer ────────────────────────────────────────── */
+    .panel-foot {
+      padding: 7px 14px;
+      font-size: 11.5px;
+      color: #64748b;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      min-height: 34px;
+    }
+
+    .loading-dot {
+      display: none;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: 2px solid #d1fae5;
+      border-top-color: #2d6a4f;
+      animation: spin .6s linear infinite;
+      flex-shrink: 0;
+    }
+    .loading-dot.active { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #foot-count { font-weight: 600; color: #1b4332; }
+
+
+    /* ─── Page footer ─────────────────────────────────────────── */
+    #footer {
+      flex-shrink: 0;
+      height: 38px;
+      background: #fff;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 11.5px;
+      color: #6b7280;
+      z-index: 900;
+    }
+
+    #footer-left { flex: 1; }
+    #footer-right { color: #9ca3af; }
+
+    /* ─── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 520px) {
+      #panel { width: calc(100vw - 24px); }
+      #legend { display: none; }
+      #header .badge { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────── -->
+<div id="header">
+  <span class="logo">🌳</span>
+  <div>
+    <h1>Ooru Trees</h1>
+    <div class="sub">BBMP Tree Census · Bengaluru</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="badge" id="hdr-badge">Loading…</div>
+</div>
+
+<!-- ── Map + floating UI ───────────────────────────────────────── -->
+<div id="map-wrap">
+  <div id="map"></div>
+
+  <!-- Species panel -->
+  <div id="panel">
+    <div class="panel-head">
+      <span>Tree Species</span>
+      <button class="btn-clear" id="btn-clear">Clear</button>
+    </div>
+    <div class="search-wrap">
+      <input type="text" id="search" placeholder="Search species…" autocomplete="off" spellcheck="false">
+    </div>
+    <div id="species-list"></div>
+    <div class="panel-foot">
+      <div class="loading-dot" id="loading-dot"></div>
+      <span id="foot-text">Select a species to begin</span>
+      <span id="foot-count"></span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Footer ──────────────────────────────────────────────────── -->
+<div id="footer">
+  <div id="footer-left">Select species from the panel →</div>
+  <div id="footer-right">© OpenStreetMap contributors · Data: BBMP 2025</div>
+</div>
+
+<!-- Data: tiny index (~15 KB) + boundary (~30 KB) — loaded before module -->
+<script src="data/index.js"></script>
+<script src="data/boundary.js"></script>
+
+<!-- MapLibre GL JS (GPU-accelerated WebGL rendering) -->
+<script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+
+<!-- Main app as ES module -->
+<script type="module" src="web/app.js"></script>
+
+</body>
+</html>
