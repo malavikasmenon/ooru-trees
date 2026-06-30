@@ -119,6 +119,17 @@
     }
     .btn-clear:hover { background: #e2e8f0; }
 
+    .btn-toggle {
+      display: none;
+      font-size: 16px;
+      color: #64748b;
+      background: none;
+      border: none;
+      padding: 2px 6px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
     .search-wrap { padding: 8px 10px 5px; flex-shrink: 0; }
 
     #search {
@@ -228,10 +239,46 @@
     #footer-right { color: #9ca3af; }
 
     /* ─── Responsive ──────────────────────────────────────────── */
-    @media (max-width: 520px) {
-      #panel { width: calc(100vw - 24px); }
-      #legend { display: none; }
+    @media (max-width: 640px) {
       #header .badge { display: none; }
+      .btn-toggle { display: block; }
+
+      /* Bottom sheet: panel anchors to bottom, map visible above */
+      #panel {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-height: 48vh;
+        border-radius: 14px 14px 0 0;
+        box-shadow: 0 -4px 20px rgba(0,0,0,.14);
+        transition: max-height .25s ease;
+      }
+
+      /* Collapsed: only the header bar visible */
+      #panel.collapsed {
+        max-height: 48px;
+        overflow: hidden;
+      }
+      #panel.collapsed .btn-toggle { transform: rotate(180deg); }
+
+      /* Pull-tab hint at top of panel */
+      .panel-head::before {
+        content: '';
+        position: absolute;
+        top: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        background: #d1d5db;
+        border-radius: 2px;
+      }
+      .panel-head { position: relative; padding-top: 18px; }
+
+      /* Footer sits below panel — hide to save space */
+      #footer { display: none; }
     }
   </style>
 </head>
@@ -257,6 +304,7 @@
     <div class="panel-head">
       <span>Tree Species</span>
       <button class="btn-clear" id="btn-clear">Clear</button>
+      <button class="btn-toggle" id="btn-toggle" aria-label="Toggle panel">▾</button>
     </div>
     <div class="search-wrap">
       <input type="text" id="search" placeholder="Search species…" autocomplete="off" spellcheck="false">
@@ -286,6 +334,12 @@
 
 <!-- Main app as ES module -->
 <script type="module" src="web/app.js"></script>
+
+<script>
+  document.getElementById('btn-toggle').addEventListener('click', () => {
+    document.getElementById('panel').classList.toggle('collapsed');
+  });
+</script>
 
 </body>
 </html>
