@@ -256,10 +256,11 @@
         transition: max-height .25s ease;
       }
 
-      /* Collapsed: only the header bar visible */
-      #panel.collapsed {
-        max-height: 60px;
-        overflow: hidden;
+      /* Collapsed: hide everything below the header */
+      #panel.collapsed .search-wrap,
+      #panel.collapsed #species-list,
+      #panel.collapsed .panel-foot {
+        display: none;
       }
       #panel.collapsed .btn-toggle { transform: rotate(180deg); }
 
