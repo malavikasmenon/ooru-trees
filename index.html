@@ -258,7 +258,7 @@
 
       /* Collapsed: only the header bar visible */
       #panel.collapsed {
-        max-height: 48px;
+        max-height: 60px;
         overflow: hidden;
       }
       #panel.collapsed .btn-toggle { transform: rotate(180deg); }
@@ -336,8 +336,13 @@
 <script type="module" src="web/app.js"></script>
 
 <script>
-  document.getElementById('btn-toggle').addEventListener('click', () => {
+  document.getElementById('btn-toggle').addEventListener('click', e => {
+    e.stopPropagation();
     document.getElementById('panel').classList.toggle('collapsed');
+  });
+  document.querySelector('.panel-head').addEventListener('click', () => {
+    const panel = document.getElementById('panel');
+    if (panel.classList.contains('collapsed')) panel.classList.remove('collapsed');
   });
 </script>
 
