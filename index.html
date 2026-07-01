@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Ooru Trees · Bengaluru</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css">
   <style>
@@ -119,6 +119,31 @@
     }
     .btn-clear:hover { background: #e2e8f0; }
 
+    /* ─── Name tabs ───────────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      padding: 0 10px 8px;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      flex: 1;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #64748b;
+      background: #f1f5f9;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .tab.active {
+      background: #1b4332;
+      color: #d8f3dc;
+    }
+
     .btn-toggle {
       display: none;
       font-size: 16px;
@@ -175,9 +200,9 @@
       flex: 1;
       font-size: 12px;
       color: #374151;
-      font-style: italic;
       line-height: 1.4;
     }
+    #species-list.scientific .sp-name { font-style: italic; }
 
     .sp-count {
       font-size: 11px;
@@ -250,13 +275,16 @@
         left: 0;
         right: 0;
         width: 100%;
-        max-height: 48vh;
+        max-height: 52vh;
+        /* Push content above iOS home indicator / Android gesture bar */
+        padding-bottom: env(safe-area-inset-bottom, 0px);
         border-radius: 14px 14px 0 0;
         box-shadow: 0 -4px 20px rgba(0,0,0,.14);
         transition: max-height .25s ease;
       }
 
       /* Collapsed: hide everything below the header */
+      #panel.collapsed .tab-bar,
       #panel.collapsed .search-wrap,
       #panel.collapsed #species-list,
       #panel.collapsed .panel-foot {
@@ -277,6 +305,13 @@
         border-radius: 2px;
       }
       .panel-head { position: relative; padding-top: 18px; }
+
+      /* Zoom controls: move to top-right so they aren't behind the bottom sheet */
+      .maplibregl-ctrl-bottom-right {
+        bottom: auto;
+        top: 8px;
+        right: 8px;
+      }
 
       /* Footer sits below panel — hide to save space */
       #footer { display: none; }
@@ -306,6 +341,10 @@
       <span>Tree Species</span>
       <button class="btn-clear" id="btn-clear">Clear</button>
       <button class="btn-toggle" id="btn-toggle" aria-label="Toggle panel">▾</button>
+    </div>
+    <div class="tab-bar">
+      <button class="tab active" id="tab-common">Common</button>
+      <button class="tab" id="tab-scientific">Scientific</button>
     </div>
     <div class="search-wrap">
       <input type="text" id="search" placeholder="Search species…" autocomplete="off" spellcheck="false">

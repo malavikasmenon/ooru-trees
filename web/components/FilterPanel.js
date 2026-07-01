@@ -1,5 +1,6 @@
-import { TreeStore }  from '../stores/TreeStore.js';
-import { flowerColor } from '../layers/trees.js';
+import { TreeStore }    from '../stores/TreeStore.js';
+import { flowerColor }  from '../layers/trees.js';
+import { COMMON_NAMES } from '../data/common_names.js';
 
 export function buildFilterPanel(treeIndex) {
   const { s, c } = treeIndex;
@@ -15,6 +16,11 @@ export function buildFilterPanel(treeIndex) {
 
   const listEl   = document.getElementById('species-list');
   const searchEl = document.getElementById('search');
+  let useCommon  = true;
+
+  function displayName(name) {
+    return useCommon ? (COMMON_NAMES[name] || name) : name;
+  }
 
   function renderList(items) {
     listEl.innerHTML = '';
@@ -24,7 +30,7 @@ export function buildFilterPanel(treeIndex) {
       div.dataset.sid = sid;
       div.innerHTML   = `
         <div class="swatch" style="background:${color}"></div>
-        <span class="sp-name">${name}</span>
+        <span class="sp-name">${displayName(name)}</span>
         <span class="sp-count">${count.toLocaleString('en-IN')}</span>
         <span class="sp-check">✓</span>`;
       div.addEventListener('click', () => TreeStore.toggleSpecies(sid));
@@ -34,11 +40,25 @@ export function buildFilterPanel(treeIndex) {
 
   function visibleItems() {
     const q = searchEl.value.trim().toLowerCase();
-    return q ? allItems.filter(it => it.name.toLowerCase().includes(q)) : allItems;
+    if (!q) return allItems;
+    return allItems.filter(it =>
+      it.name.toLowerCase().includes(q) ||
+      (COMMON_NAMES[it.name] || '').toLowerCase().includes(q)
+    );
   }
 
-  searchEl.addEventListener('input', () => renderList(visibleItems()));
+  // Tab switching
+  function setTab(common) {
+    useCommon = common;
+    document.getElementById('tab-common').classList.toggle('active', common);
+    document.getElementById('tab-scientific').classList.toggle('active', !common);
+    listEl.classList.toggle('scientific', !common);
+    renderList(visibleItems());
+  }
+  document.getElementById('tab-common').addEventListener('click',     () => setTab(true));
+  document.getElementById('tab-scientific').addEventListener('click', () => setTab(false));
 
+  searchEl.addEventListener('input', () => renderList(visibleItems()));
   document.getElementById('btn-clear').addEventListener('click', () => TreeStore.clearFilters());
 
   TreeStore.subscribe(() => {
