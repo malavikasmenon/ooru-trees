@@ -176,7 +176,14 @@ map.addLayer({
 
 Outside mask is implemented as an inverse polygon.
 
-## 11. Filtering
+## 11. Data Notes
+
+The raw census dataset includes an "Others" category for trees where the
+species could not be identified. These are excluded from the species list
+(so users cannot filter by them) but are included in the total tree count
+shown in the header badge.
+
+## 12. Filtering
 
 ``` javascript
 map.setFilter("trees", [

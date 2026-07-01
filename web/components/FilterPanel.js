@@ -10,7 +10,7 @@ export function buildFilterPanel(treeIndex) {
     .filter(it => it.name !== 'Others')
     .sort((a, b) => b.count - a.count);
 
-  const totalTrees = allItems.reduce((sum, it) => sum + it.count, 0);
+  const totalTrees = c.reduce((sum, n) => sum + n, 0); // includes "Others"
   document.getElementById('hdr-badge').textContent =
     `${allItems.length} species · ${totalTrees.toLocaleString('en-IN')} trees`;
 
