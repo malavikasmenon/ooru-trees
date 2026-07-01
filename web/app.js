@@ -79,7 +79,7 @@ function addBoundaryLayers(map) {
     id:     'outside-mask',
     type:   'fill',
     source: 'outside-mask',
-    paint:  { 'fill-color': '#f5f0ea', 'fill-opacity': 0.75 },
+    paint:  { 'fill-color': '#f0ede8', 'fill-opacity': 0.92 },
   });
 
   map.addSource('boundary-outline', {
@@ -98,28 +98,7 @@ function addBoundaryLayers(map) {
 // ── MapLibre GL JS map ────────────────────────────────────────────────────
 const map = new maplibregl.Map({
   container: 'map',
-  style: {
-    version: 8,
-    glyphs:  'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-    sources: {
-      'carto-light': {
-        type:        'raster',
-        tiles: [
-          'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-          'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-          'https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-          'https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-        ],
-        tileSize:    256,
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/">CARTO</a>',
-        maxzoom:     19,
-      },
-    },
-    layers: [
-      { id: 'background', type: 'background', paint: { 'background-color': '#f5f0ea' } },
-      { id: 'carto-light', type: 'raster', source: 'carto-light' },
-    ],
-  },
+  style: 'https://tiles.openfreemap.org/styles/positron',
   center:           [77.5946, 12.9716],
   zoom:             11,
   minZoom:          9,
@@ -165,8 +144,14 @@ async function syncLayers(store) {
 }
 
 map.on('load', () => {
+  // Dim text labels from the basemap style
+  map.getStyle().layers.forEach(layer => {
+    if (layer.type === 'symbol') {
+      map.setPaintProperty(layer.id, 'text-opacity', 0.35);
+    }
+  });
+
   addBoundaryLayers(map);
-  // Sync any species the user selected before the map finished loading
   syncLayers(TreeStore);
   TreeStore.subscribe(syncLayers);
 });
