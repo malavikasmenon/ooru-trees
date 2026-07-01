@@ -268,19 +268,28 @@
       #header .badge { display: none; }
       .btn-toggle { display: block; }
 
-      /* Bottom sheet: panel anchors to bottom, map visible above */
+      /*
+       * position:fixed anchors to the visual viewport (above iOS Safari chrome).
+       * position:absolute inside 100vh would be partly hidden behind the browser bar.
+       */
       #panel {
+        position: fixed;
         top: auto;
         bottom: 0;
         left: 0;
         right: 0;
         width: 100%;
-        max-height: 52vh;
-        /* Push content above iOS home indicator / Android gesture bar */
+        max-height: 55vh;
         padding-bottom: env(safe-area-inset-bottom, 0px);
         border-radius: 14px 14px 0 0;
-        box-shadow: 0 -4px 20px rgba(0,0,0,.14);
+        box-shadow: 0 -4px 20px rgba(0,0,0,.18);
         transition: max-height .25s ease;
+        z-index: 850;
+      }
+
+      /* Ensure panel-head never gets clipped when collapsed */
+      .panel-head {
+        min-height: 54px;
       }
 
       /* Collapsed: hide everything below the header */
@@ -296,15 +305,15 @@
       .panel-head::before {
         content: '';
         position: absolute;
-        top: 6px;
+        top: 7px;
         left: 50%;
         transform: translateX(-50%);
-        width: 36px;
+        width: 40px;
         height: 4px;
         background: #d1d5db;
         border-radius: 2px;
       }
-      .panel-head { position: relative; padding-top: 18px; }
+      .panel-head { position: relative; padding-top: 20px; }
 
       /* Zoom controls: move to top-right so they aren't behind the bottom sheet */
       .maplibregl-ctrl-bottom-right {
