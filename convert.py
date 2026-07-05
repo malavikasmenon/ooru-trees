@@ -5,8 +5,9 @@ import xml.etree.ElementTree as ET
 import json
 import sys
 
-KML_PATH = '/tmp/trees_data/bbmp_tree_census_july2025.kml'
-OUT_PATH  = '/home/malavika/claude-projects/ooru-trees/trees_data.js'
+# Run this script from the repo root: python convert.py
+KML_PATH = 'data/bbmp_tree_census_july2025.kml'
+OUT_PATH  = 'trees_data.js'
 
 def parse_kml(filename):
     species_index  = {}
